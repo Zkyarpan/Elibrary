@@ -1,6 +1,7 @@
-import express, { Request, Response, NextFunction } from "express";
+import express from "express";
 import createHttpError from "http-errors";
 import globalErrorHandler from "./middlewares/globalErrorHandler";
+import userRouter from "./users/userRouter";
 
 const app = express();
 
@@ -11,6 +12,7 @@ app.get("/", (req, res, next) => {
   res.json({ message: "Welcome to our first end point !" });
 });
 
+app.use("/api/users", userRouter);
 // Global Error Handler
 app.use(globalErrorHandler);
 
