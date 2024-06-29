@@ -43,12 +43,36 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     // Response
     res.status(201).json({ accessToken: token });
   } catch (error) {
-    next(createHttpError(500, "Error while creating new user."));
+    next(createHttpError(500, "Server Error while creating new user."));
   }
 };
 
 const loginUser = async (req: Request, res: Response, next: NextFunction) => {
-  res.json({ message: "Hey this is login end point !!" });
+  const { email, password } = req.body;
+  if (!email || !password) {
+    return next(createHttpError(400, "All feilds are required."));
+  }
+
+  try {
+    const user = await userModel.findOne({ email });
+    if (!user) {
+      return next(createHttpError(404, "User not found."));
+    }
+
+    const matchPass = await bcrypt.compare(password, user.password);
+    if (!matchPass) {
+      return next(createHttpError(401, "Invalid email or password."));
+    }
+
+    // Generate JWT token for sign in user
+    const token = sign({ sub: user._id }, config.jwtSecret as string, {
+      expiresIn: "7d",
+    });
+
+    res.json({ accessToken: token });
+  } catch (error) {
+    return next(createHttpError(500, "Internal Server error while login."));
+  }
 };
 
 export { createUser, loginUser };
