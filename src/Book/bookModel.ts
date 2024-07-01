@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import { Book } from "./booksTypes";
 
 const bookSchema = new mongoose.Schema<Book>(
