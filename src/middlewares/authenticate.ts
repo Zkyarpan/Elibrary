@@ -28,7 +28,6 @@ const authenticate = async (
       const decoded = verify(token, config.jwtSecret as string) as JwtPayload;
       const _req = req as AuthRequest;
       _req.userId = decoded.sub as string;
-      console.log("Decoded:", decoded);
       next();
     } catch (error) {
       return next(createHttpError(401, "Token Expired"));
