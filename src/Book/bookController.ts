@@ -5,8 +5,13 @@ import createHttpError from "http-errors";
 import fs from "node:fs";
 import cloudinary from "../config/cloudinary";
 import bookModel from "./bookModel";
+import { AuthRequest } from "../middlewares/authenticate";
 
-const createBook = async (req: Request, res: Response, next: NextFunction) => {
+const createBook = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { title, genre } = req.body;
     const files = req.files as { [filename: string]: Express.Multer.File[] };
@@ -41,7 +46,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
     const newBook = await bookModel.create({
       title,
       genre,
-      author: "66766837515ddbf746795759",
+      author: req.userId,
       coverImage: uploadResult.secure_url,
       file: bookFileUploadResult.secure_url,
     });
