@@ -8,7 +8,7 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
   const files = req.files as { [filename: string]: Express.Multer.File[] };
   const coverImageMimeType = files.coverImage[0].mimetype.split("/").at(-1);
   const fileName = files.coverImage[0].filename;
-  const filePath =  path.resolve(
+  const filePath = path.resolve(
     __dirname,
     "../../public/data/uploads",
     fileName
@@ -19,7 +19,11 @@ const createBook = async (req: Request, res: Response, next: NextFunction) => {
     folder: "book-covers",
     format: coverImageMimeType,
   });
-  res.json({});
+  res.status(200).json({
+    status: 200,
+    success: true,
+    message: "Successfully uploaded",
+  });
 };
 
 export { createBook };
