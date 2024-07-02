@@ -3,6 +3,7 @@ import createHttpError from "http-errors";
 import bookModel from "./bookModel";
 import { AuthRequest } from "../middlewares/authenticate";
 import { uploadToCloudinary, getFilePath } from "../utils/fileUpload";
+import cloudinary from "../config/cloudinary";
 
 const createBook = async (
   req: AuthRequest,
@@ -118,11 +119,71 @@ const listBooks = async (
 ) => {
   const book = await bookModel.find({});
   res.json(book);
-  res.json({});
   try {
   } catch (error) {
     return next(createHttpError(500, "Error while fetching books"));
   }
 };
 
-export { createBook, updateBook, listBooks };
+const getSingleBook = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const id = req.params.id;
+  try {
+    const book = await bookModel.findOne({ _id: id });
+    if (!book) {
+      return next(createHttpError(404, "Book not found"));
+    }
+    return res.json(book);
+  } catch (error) {
+    return next(createHttpError(500, "Error while fetching"));
+  }
+};
+
+const deleteBook = async (
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+) => {
+  const id = req.params.id;
+  try {
+    const book = await bookModel.findOne({ _id: id });
+    if (!book) {
+      return next(createHttpError(404, "Book not found"));
+    }
+    if (book.author.toString() !== req.userId) {
+      return next(createHttpError(403, "You cannot delete others' book."));
+    }
+    // To delete Images
+    const coverFileSplits = book.coverImage.split("/");
+    const CoverImagePublicID =
+      coverFileSplits.at(-2) + "/" + coverFileSplits.at(-1)?.split(".").at(-2);
+
+    // To delete files
+    const bookFileSplits = book.file.split("/");
+    const BookFilePublicID =
+      bookFileSplits.at(-2) + "/" + bookFileSplits.at(-1);
+    try {
+      await cloudinary.uploader.destroy(CoverImagePublicID);
+      await cloudinary.uploader.destroy(BookFilePublicID, {
+        resource_type: "raw",
+      });
+    } catch (error) {
+      return next(
+        createHttpError(500, "Error while deleting files from cloudinary")
+      );
+    }
+
+    // To delete from database
+    await bookModel.deleteOne({ _id: id });
+    return res.status(200).json({
+      message: `Sucessfully deleted ${id}`,
+    });
+  } catch (error) {
+    return next(createHttpError(500, "Error while deleting book"));
+  }
+};
+
+export { createBook, updateBook, listBooks, getSingleBook, deleteBook };
