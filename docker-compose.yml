@@ -1,0 +1,34 @@
+version: "3.9"
+
+services:
+  # MongoDB service
+  mongo_db:
+    container_name: db_container
+    image: mongo:5.0
+    restart: always
+    ports:
+      - 2717:27017
+    volumes:
+      - mongo_db:/data/db
+
+  # Node API service
+  api:
+    build: .
+    ports:
+      - 4000:4000
+    environment:
+      - PORT=4000
+      - NODE_ENV=development
+      - JWT_SECRET=ertyuiodfghj
+      - CLOUDINARY_CLOUD=dn0ggztq3
+      - CLOUDINARY_API_KEY=583137779296458
+      - CLOUDINARY_API_SECRET=PxhR0tjRpaADlln62IDyFs89BTc
+      - FRONTEND_DOMAIN=http://localhost:3000
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    depends_on:
+      - mongo_db
+
+volumes:
+  mongo_db: {}
