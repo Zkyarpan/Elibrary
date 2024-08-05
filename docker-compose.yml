@@ -15,9 +15,9 @@ services:
   api:
     build: .
     ports:
-      - 4000:4000
+      - 5500:5500
     environment:
-      - PORT=4000
+      - PORT=5500
       - NODE_ENV=development
       - JWT_SECRET=ertyuiodfghj
       - CLOUDINARY_CLOUD=dn0ggztq3
